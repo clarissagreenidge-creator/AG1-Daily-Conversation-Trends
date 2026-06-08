@@ -86,9 +86,10 @@
   <div>
     <strong>📋 How to use this dashboard</strong>
     <ol>
-      <li>Open the daily conversation export from Gladly (the CSV file Clarissa sends).</li>
-      <li>Drag and drop it onto the box below — or click the box to browse for the file.</li>
-      <li>The dashboard will load instantly. Use the filter chips in the Tech Issues section to drill into specific issue types.</li>
+      <li>Clarissa will send you the daily CSV file from Gladly — save it to your computer.</li>
+      <li>Drag and drop the CSV onto the box below — or click the box to browse for the file.</li>
+      <li>The dashboard loads instantly in your browser. Your data stays on your computer and is never uploaded anywhere.</li>
+      <li>Use the filter chips in the Tech Issues section to drill into specific issue types.</li>
       <li>Click any <strong>Open ↗</strong> link to jump directly to that conversation in Gladly.</li>
     </ol>
   </div>
@@ -119,7 +120,7 @@
     <div class="stat-card">
       <div class="label">Total Conversations</div>
       <div class="value" id="stat-total">—</div>
-      <div class="sub">for the day</div>
+      <div class="sub" id="period-label">for the period</div>
     </div>
     <div class="stat-card">
       <div class="label">Within HOOP</div>
@@ -280,14 +281,28 @@ function renderDashboard(rows) {
   // Tech issues (tagged) — stored for later combination with AI-detected
   const techTopics = {};
 
-  // Date
+  // Date — supports single day or multi-day range (e.g. weekends)
   const dates = data.map(r => r['Date']).filter(Boolean);
   let displayDate = '';
   if (dates.length) {
-    const d = new Date(dates[0]);
-    displayDate = isNaN(d) ? dates[0].split(' ')[0] : d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    const parsedDates = dates.map(d => new Date(d)).filter(d => !isNaN(d));
+    if (parsedDates.length) {
+      const minD = new Date(Math.min(...parsedDates));
+      const maxD = new Date(Math.max(...parsedDates));
+      const fmt = d => d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      const fmtShort = d => d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+      if (minD.toDateString() === maxD.toDateString()) {
+        displayDate = fmt(minD);
+      } else {
+        displayDate = fmtShort(minD) + ' – ' + fmt(maxD);
+      }
+    } else {
+      displayDate = dates[0].split(' ')[0];
+    }
     document.getElementById('date-badge').textContent = displayDate;
     document.getElementById('page-date').textContent = 'Data for ' + displayDate;
+    const isRange = displayDate.includes('–');
+    document.getElementById('period-label').textContent = isRange ? 'for the weekend' : 'for the day';
   }
 
   // AI-detected tech issues
@@ -499,14 +514,15 @@ function renderDashboard(rows) {
   const topCountryList = Object.entries(counter(data.map(r => r['Country']).filter(Boolean))).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,n])=>`${c} (${n})`).join(', ');
 
   let summaryParts = [];
-  summaryParts.push(`On ${displayDate}, AG1 received <strong>${data.length} customer conversations</strong> across ${topCountryList}.`);
+  const datePrefix = displayDate.includes('–') ? `From ${displayDate}` : `On ${displayDate}`;
+  summaryParts.push(`${datePrefix}, AG1 received <strong>${data.length} customer conversations</strong> across ${topCountryList}.`);
   summaryParts.push(`The top contact reasons were <strong>${topTopics.join(', ')}</strong>.`);
   if (cancelTotal > 0) summaryParts.push(`There were <strong>${cancelTotal} cancellation-related contacts</strong> (orders and subscriptions combined).`);
   if (techDetectedTotal > 0) {
     const topIssue = detectedSorted[0];
     summaryParts.push(`<strong>${techDetectedTotal} tech issues</strong> were detected — the most common being <em>${topIssue[0]}</em> (${topIssue[1]} conversations).`);
   } else {
-    summaryParts.push('No tech issues were detected today.');
+    summaryParts.push('No tech issues were detected.');
   }
   document.getElementById('summary-text').innerHTML = summaryParts.join(' ');
 
