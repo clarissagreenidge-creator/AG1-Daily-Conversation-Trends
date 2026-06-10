@@ -70,10 +70,22 @@
   .instructions strong { display: block; margin-bottom: 4px; font-size: 14px; }
   .instructions ol { margin: 6px 0 0 0; padding-left: 18px; line-height: 1.7; }
   .instructions .dismiss { margin-left: auto; background: none; border: none; cursor: pointer; color: #a16207; font-size: 18px; line-height: 1; padding: 0 4px; flex-shrink: 0; }
+  /* New Products */
+  .np-card { background: #fff; border-radius: 10px; padding: 20px; border-top: 4px solid #ccc; }
+  .np-card--omega3 { border-top-color: #0891b2; }
+  .np-card--coq10 { border-top-color: #d97706; }
+  .np-card--ag1pro { border-top-color: #7c3aed; }
+  .np-title { font-size: 13px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .np-count { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-bottom: 10px; }
+  .np-count--omega3 { background: #cffafe; color: #0891b2; }
+  .np-count--coq10 { background: #fef9c3; color: #d97706; }
+  .np-count--ag1pro { background: #ede9fe; color: #7c3aed; }
+  .np-item { font-size: 12px; color: #555; padding: 5px 0; border-bottom: 1px solid #f0f0f0; line-height: 1.5; }
+  .np-item:last-child { border-bottom: none; }
+  .np-empty { font-size: 12px; color: #aaa; font-style: italic; }
 </style>
 </head>
 <body>
-
 <header>
   <div>
     <h1>AG1 Conversation Trends</h1>
@@ -81,7 +93,6 @@
   </div>
   <span id="file-label">No file loaded</span>
 </header>
-
 <div class="instructions" id="instructions">
   <div>
     <strong>📋 How to use this dashboard</strong>
@@ -95,27 +106,43 @@
   </div>
   <button class="dismiss" onclick="document.getElementById('instructions').style.display='none'" title="Dismiss">×</button>
 </div>
-
 <div class="upload-area" id="dropZone">
   <p><strong>Drop the daily conversation CSV here</strong> or click to browse</p>
   <p class="hint">Load the file Clarissa sends each day — no setup required</p>
   <input type="file" id="fileInput" accept=".csv,.tsv">
 </div>
-
 <div id="dashboard">
-
   <!-- AI Summary -->
   <div id="summary-box" style="margin:0 32px 16px;background:#fff;border-radius:10px;padding:20px 24px;border-left:4px solid #2563eb;">
     <div style="font-size:11px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Daily Summary</div>
     <p id="summary-text" style="font-size:14px;line-height:1.7;color:#333;margin:0;"></p>
   </div>
-
+  <!-- New Products Overview -->
+  <div id="newproducts-box" style="margin:0 32px 16px;">
+    <div style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">🆕 New Products Overview</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div class="np-card np-card--omega3">
+        <div class="np-title">Omega-3</div>
+        <div><span class="np-count np-count--omega3" id="np-omega3-count">0 conversations</span></div>
+        <div id="np-omega3-content"><span class="np-empty">No mentions today</span></div>
+      </div>
+      <div class="np-card np-card--coq10">
+        <div class="np-title">Omega + CoQ10</div>
+        <div><span class="np-count np-count--coq10" id="np-coq10-count">0 conversations</span></div>
+        <div id="np-coq10-content"><span class="np-empty">No mentions today</span></div>
+      </div>
+      <div class="np-card np-card--ag1pro">
+        <div class="np-title">AG1 Pro</div>
+        <div><span class="np-count np-count--ag1pro" id="np-ag1pro-count">0 conversations</span></div>
+        <div id="np-ag1pro-content"><span class="np-empty">No mentions today</span></div>
+      </div>
+    </div>
+  </div>
   <!-- Retail Callout -->
   <div id="retail-box" style="margin:0 32px 16px;background:#fff;border-radius:10px;padding:20px 24px;border-left:4px solid #7c3aed;display:none;">
     <div style="font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">🛒 Retail Mentions <span id="retail-count" style="background:#ede9fe;color:#7c3aed;font-size:12px;padding:2px 8px;border-radius:20px;margin-left:6px;"></span></div>
     <div id="retail-content"></div>
   </div>
-
   <div class="stats-row">
     <div class="stat-card">
       <div class="label">Total Conversations</div>
@@ -143,7 +170,6 @@
       <div id="tech-breakdown" style="margin-top:10px;"></div>
     </div>
   </div>
-
   <div class="charts-grid">
     <div class="card">
       <h2>Top Topics <span class="date-badge" id="date-badge"></span></h2>
@@ -154,7 +180,6 @@
       <canvas id="channelChart"></canvas>
     </div>
   </div>
-
   <div class="charts-grid-3">
     <div class="card">
       <h2>Topic Categories</h2>
@@ -169,7 +194,6 @@
       <canvas id="hoopChart"></canvas>
     </div>
   </div>
-
   <div class="card" style="margin-top:16px;">
     <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:18px;">
       <h2 style="margin:0;">⚠️ AI-Detected Tech Issues <span style="font-size:12px;font-weight:400;color:#999;">(flagged from AI Summary regardless of tag)</span></h2>
@@ -189,10 +213,8 @@
     </div>
   </div>
 </div>
-
 <script>
 let channelChartInst, categoryChartInst, countryChartInst, hoopChartInst;
-
 function categorize(topic) {
   if (topic.startsWith('Portal Action') || topic.startsWith('Portal Confirmation') || topic.startsWith('Portal Question')) return 'Portal';
   if (topic.startsWith('F&D')) return 'Fulfillment & Delivery';
@@ -201,7 +223,6 @@ function categorize(topic) {
   if (topic.startsWith('Tech')) return 'Tech Issue';
   return 'Other';
 }
-
 function catClass(cat) {
   if (cat === 'Portal') return 'cat-portal';
   if (cat === 'Fulfillment & Delivery') return 'cat-fd';
@@ -209,22 +230,16 @@ function catClass(cat) {
   if (cat === 'Marketing') return 'cat-marketing';
   return 'cat-other';
 }
-
 function parseCSV(text) {
-  // Detect separator from first line
   const firstNewline = text.indexOf('\n');
   const firstLine = text.slice(0, firstNewline);
   const sep = firstLine.includes('\t') ? '\t' : ',';
-
-  // Character-by-character parser that handles newlines inside quoted fields
   const fields = [];
   const rows = [];
   let cur = '', inQ = false;
-
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
     const next = text[i + 1];
-
     if (ch === '"') {
       if (!inQ) { inQ = true; continue; }
       if (next === '"') { cur += '"'; i++; continue; }
@@ -240,7 +255,6 @@ function parseCSV(text) {
     cur += ch;
   }
   if (cur || fields.length) { fields.push(cur); rows.push([...fields]); }
-
   const headers = rows[0].map(h => h.trim().replace(/^﻿/, ''));
   const dataRows = [];
   for (let i = 1; i < rows.length; i++) {
@@ -252,35 +266,90 @@ function parseCSV(text) {
   }
   return dataRows;
 }
-
 function counter(arr) {
   const c = {};
   arr.forEach(v => { if (v) c[v] = (c[v] || 0) + 1; });
   return c;
 }
 
-function renderDashboard(rows) {
-  // Filter out summary/total rows
-  const data = rows.filter(r => r['Conversation Id'] && r['Conversation Id'] !== 'Total');
+// ── New Products Detection ────────────────────────────────────────────────
+function renderNewProducts(data) {
+  const products = [
+    {
+      id: 'omega3',
+      label: 'Omega-3',
+      match: r => {
+        const s = (r['AI Summary'] || '').toLowerCase();
+        const t = (r['Topics List'] || '').toLowerCase();
+        const hasCoq = s.includes('coq10') || s.includes('co-q10') || t.includes('coq10') || t.includes('omega coq10');
+        if (hasCoq) return false; // belongs to CoQ10 card instead
+        return t.includes('omega enhanced') || t.includes('omega3') || t.includes('new omega3') ||
+               t.includes('campaign response - new omega') ||
+               s.includes('omega 3') || s.includes('omega-3') || s.includes('omega3') || s.includes('omega enhanced');
+      }
+    },
+    {
+      id: 'coq10',
+      label: 'Omega + CoQ10',
+      match: r => {
+        const s = (r['AI Summary'] || '').toLowerCase();
+        const t = (r['Topics List'] || '').toLowerCase();
+        return s.includes('coq10') || s.includes('co-q10') || s.includes('coenzyme q10') ||
+               t.includes('coq10') || t.includes('omega coq10');
+      }
+    },
+    {
+      id: 'ag1pro',
+      label: 'AG1 Pro',
+      match: r => {
+        const s = (r['AI Summary'] || '').toLowerCase();
+        const t = (r['Topics List'] || '').toLowerCase();
+        return t.includes('ag1 pro') || t.includes('proactive check in - ag1 pro') ||
+               t.includes('campaign response - ag1 pro') ||
+               s.includes('ag1 pro') || s.includes('ag one pro') ||
+               (s.includes('creatine') && (s.includes('new') || s.includes('pro') || s.includes('upcoming')));
+      }
+    }
+  ];
 
-  // Stats
+  products.forEach(({ id, match }) => {
+    const hits = data.filter(match);
+    const countEl = document.getElementById(`np-${id}-count`);
+    const contentEl = document.getElementById(`np-${id}-content`);
+    countEl.textContent = hits.length + ' conversation' + (hits.length !== 1 ? 's' : '');
+    if (hits.length === 0) {
+      contentEl.innerHTML = '<span class="np-empty">No mentions today</span>';
+      return;
+    }
+    // Show up to 5 summaries, skip N/A
+    const summaries = hits
+      .map(r => r['AI Summary'] || '')
+      .filter(s => s && s.toLowerCase() !== 'n/a')
+      .slice(0, 5);
+    if (summaries.length === 0) {
+      contentEl.innerHTML = '<span class="np-empty">' + hits.length + ' conversation(s) — no summaries available</span>';
+    } else {
+      contentEl.innerHTML = summaries.map(s =>
+        `<div class="np-item">${s.length > 160 ? s.slice(0, 157) + '…' : s}</div>`
+      ).join('');
+    }
+  });
+}
+
+function renderDashboard(rows) {
+  const data = rows.filter(r => r['Conversation Id'] && r['Conversation Id'] !== 'Total');
   document.getElementById('stat-total').textContent = data.length;
   const withinHoop = data.filter(r => r['HOOP'] === 'Within HOOP').length;
   document.getElementById('stat-hoop').textContent = withinHoop;
   document.getElementById('stat-hoop-pct').textContent = Math.round(withinHoop / data.length * 100) + '% of conversations';
-
   const cancelCount = data.filter(r => {
     const t = r['Topics List'] || '';
     return t.includes('Cancel Order') || t.includes('Cancel Subscription');
   }).length;
   document.getElementById('stat-cancel').textContent = cancelCount;
-
   const uniqueCountries = new Set(data.map(r => r['Country']).filter(Boolean)).size;
   document.getElementById('stat-countries').textContent = uniqueCountries;
-
-  // Tech issues (tagged) — stored for later combination with AI-detected
   const techTopics = {};
-
   // Date — supports single day or multi-day range (e.g. weekends)
   const dates = data.map(r => r['Date']).filter(Boolean);
   let displayDate = '';
@@ -304,7 +373,6 @@ function renderDashboard(rows) {
     const isRange = displayDate.includes('–');
     document.getElementById('period-label').textContent = isRange ? 'for the weekend' : 'for the day';
   }
-
   // AI-detected tech issues
   const ISSUE_RULES = [
     {
@@ -328,12 +396,11 @@ function renderDashboard(rows) {
       test: s => s.includes('unable to') && s.includes('website') && !s.includes('skip') && !s.includes('postpone')
     },
   ];
-
   const detectedRows = [];
   data.forEach(r => {
     const summary = (r['AI Summary'] || '').toLowerCase();
     if (!summary || summary === 'n/a') return;
-    if ((r['Topics List'] || '').toLowerCase().includes('tech issue')) return; // already tagged
+    if ((r['Topics List'] || '').toLowerCase().includes('tech issue')) return;
     for (const rule of ISSUE_RULES) {
       if (rule.test(summary)) {
         detectedRows.push({ row: r, issueType: rule.label });
@@ -341,10 +408,7 @@ function renderDashboard(rows) {
       }
     }
   });
-
   document.getElementById('detected-count').textContent = detectedRows.length + ' conversations';
-
-  // Build filter chips
   const issueCounts = {};
   detectedRows.forEach(d => { issueCounts[d.issueType] = (issueCounts[d.issueType] || 0) + 1; });
   let activeFilter = null;
@@ -361,14 +425,12 @@ function renderDashboard(rows) {
       });
     });
   }
-
   function renderDetectedTable() {
     const filtered = activeFilter ? detectedRows.filter(d => d.issueType === activeFilter) : detectedRows;
     if (filtered.length === 0) {
       document.getElementById('detected-tbody').innerHTML = '<tr><td colspan="4" style="padding:16px;color:#999;text-align:center;">No AI-detected tech issues for this day.</td></tr>';
       return;
     }
-    // Group by issue type
     const groups = {};
     filtered.forEach(({ row, issueType }) => {
       if (!groups[issueType]) groups[issueType] = [];
@@ -380,7 +442,6 @@ function renderDashboard(rows) {
       const links = rows.filter(r => r['Gladly Link']).map((r, i) =>
         `<a class="gladly-link" href="${r['Gladly Link']}" target="_blank">#${i+1}</a>`
       ).join(' ');
-      // Summaries as expandable list
       const summaryList = rows.map(r =>
         `<li style="margin-bottom:4px;color:#555;">${r['AI Summary'] || ''}</li>`
       ).join('');
@@ -392,22 +453,17 @@ function renderDashboard(rows) {
       </tr>`;
     }).join('');
   }
-
   renderFilters();
   renderDetectedTable();
-
-  // Update tech tile using AI-detected groups + any tagged-but-not-detected
   const detectedByType = {};
   detectedRows.forEach(({ issueType }) => {
     detectedByType[issueType] = (detectedByType[issueType] || 0) + 1;
   });
-  // Also include tagged tech issues that weren't picked up by AI detection
   data.forEach(r => {
     (r['Topics List'] || '').split(',').forEach(t => {
       const clean = t.trim();
       if (clean.startsWith('Tech Issue')) {
         const type = clean.replace('Tech Issue - ', '');
-        // Only add if this conversation isn't already in detectedRows
         const alreadyCounted = detectedRows.some(d => d.row['Conversation Id'] === r['Conversation Id']);
         if (!alreadyCounted) detectedByType[type] = (detectedByType[type] || 0) + 1;
       }
@@ -422,7 +478,6 @@ function renderDashboard(rows) {
         `<div class="tech-item"><span class="tech-name">${type}</span><span class="tech-count">${n}</span></div>`
       ).join('');
   document.getElementById('tech-tile').style.borderLeftColor = totalDetected > 0 ? '#dc2626' : '#16a34a';
-
   // Topics
   const allTopics = [];
   data.forEach(r => {
@@ -436,7 +491,6 @@ function renderDashboard(rows) {
   const topicCounts = counter(allTopics);
   const sorted = Object.entries(topicCounts).sort((a,b) => b[1]-a[1]).slice(0, 15);
   const maxCount = sorted[0]?.[1] || 1;
-
   const table = document.getElementById('topic-table');
   table.innerHTML = sorted.map(([topic, count]) => {
     const cat = categorize(topic);
@@ -452,7 +506,6 @@ function renderDashboard(rows) {
       </td>
     </tr>`;
   }).join('');
-
   // Channel chart
   const channels = counter(data.map(r => r['Channel']).filter(v => v && v !== 'Total'));
   if (channelChartInst) channelChartInst.destroy();
@@ -464,7 +517,6 @@ function renderDashboard(rows) {
     },
     options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } }, responsive: true }
   });
-
   // Category chart
   const catCounts = {};
   allTopics.forEach(t => {
@@ -481,7 +533,6 @@ function renderDashboard(rows) {
     },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }, responsive: true }
   });
-
   // Country chart
   const countryCounts = counter(data.map(r => r['Country']).filter(Boolean));
   const topCountries = Object.entries(countryCounts).sort((a,b) => b[1]-a[1]).slice(0,8);
@@ -494,7 +545,6 @@ function renderDashboard(rows) {
     },
     options: { indexAxis: 'y', plugins: { legend: { display: false } }, responsive: true }
   });
-
   // HOOP chart
   const hoopCounts = counter(data.map(r => r['HOOP']).filter(v => v && v !== 'Total'));
   if (hoopChartInst) hoopChartInst.destroy();
@@ -506,36 +556,32 @@ function renderDashboard(rows) {
     },
     options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } }, responsive: true }
   });
-
-  // ── Daily Summary ────────────────────────────────────────────────────────
+  // ── New Products ──────────────────────────────────────────────────────────
+  renderNewProducts(data);
+  // ── Daily Summary ─────────────────────────────────────────────────────────
   const topTopics = sorted.slice(0, 3).map(([t]) => t.replace(/^(Portal Action|Portal Confirmation|Portal Question|F&D Question|F&D Issue|Product Question|Product Issue|Marketing Question) - /, ''));
   const cancelTotal = data.filter(r => (r['Topics List']||'').includes('Cancel')).length;
-  const techDetectedTotal = totalDetected;
   const topCountryList = Object.entries(counter(data.map(r => r['Country']).filter(Boolean))).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,n])=>`${c} (${n})`).join(', ');
-
   let summaryParts = [];
   const datePrefix = displayDate.includes('–') ? `From ${displayDate}` : `On ${displayDate}`;
   summaryParts.push(`${datePrefix}, AG1 received <strong>${data.length} customer conversations</strong> across ${topCountryList}.`);
   summaryParts.push(`The top contact reasons were <strong>${topTopics.join(', ')}</strong>.`);
   if (cancelTotal > 0) summaryParts.push(`There were <strong>${cancelTotal} cancellation-related contacts</strong> (orders and subscriptions combined).`);
-  if (techDetectedTotal > 0) {
+  if (totalDetected > 0) {
     const topIssue = detectedSorted[0];
-    summaryParts.push(`<strong>${techDetectedTotal} tech issues</strong> were detected — the most common being <em>${topIssue[0]}</em> (${topIssue[1]} conversations).`);
+    summaryParts.push(`<strong>${totalDetected} tech issues</strong> were detected — the most common being <em>${topIssue[0]}</em> (${topIssue[1]} conversations).`);
   } else {
     summaryParts.push('No tech issues were detected.');
   }
   document.getElementById('summary-text').innerHTML = summaryParts.join(' ');
-
   // ── Retail Callout ────────────────────────────────────────────────────────
   const RETAIL_KEYWORDS = ['retail', 'store', 'amazon', 'whole foods', 'wholefoods', 'costco', 'target', 'walmart', 'chemist warehouse', 'boots ', 'holland & barrett', 'gnc', 'vitamin shoppe', 'brick and mortar', 'in-store', 'in store', 'shelf', 'retailer'];
   const retailRows = data.filter(r => {
     const s = (r['AI Summary'] || '').toLowerCase();
     return RETAIL_KEYWORDS.some(k => s.includes(k));
   });
-
   if (retailRows.length > 0) {
     document.getElementById('retail-count').textContent = retailRows.length + ' conversation' + (retailRows.length > 1 ? 's' : '');
-    // Group by country
     const retailByCountry = {};
     retailRows.forEach(r => {
       const c = r['Country'] || 'Unknown';
@@ -553,26 +599,20 @@ function renderDashboard(rows) {
   } else {
     document.getElementById('retail-box').style.display = 'none';
   }
-
   document.getElementById('dashboard').style.display = 'block';
 }
-
 function loadFile(file) {
   document.getElementById('file-label').textContent = file.name;
   const reader = new FileReader();
-  // Try UTF-16 first, fall back to UTF-8
   reader.onload = e => {
     let text = e.target.result;
-    // Strip BOM if present
     if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
     const rows = parseCSV(text);
     renderDashboard(rows);
   };
-  // Detect encoding by reading as arraybuffer first
   const sniffer = new FileReader();
   sniffer.onload = e => {
     const bytes = new Uint8Array(e.target.result.slice(0, 4));
-    // UTF-16 LE BOM = FF FE
     if ((bytes[0] === 0xFF && bytes[1] === 0xFE) || (bytes[0] === 0xFE && bytes[1] === 0xFF)) {
       reader.readAsText(file, 'UTF-16');
     } else {
@@ -581,10 +621,8 @@ function loadFile(file) {
   };
   sniffer.readAsArrayBuffer(file);
 }
-
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
-
 dropZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
